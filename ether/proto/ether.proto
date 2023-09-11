@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package ether;
+
+option go_package = "./ether";
+
+service BlockService {
+  rpc ImportLatestBlock (ImportBlockRequest) returns (ImportBlockResponse);
+}
+
+message ImportBlockRequest {}
+
+message ImportBlockResponse {
+  string blockHash = 1;
+  int64 blockNumber = 2;
+  string status = 3; // e.g., "imported", "error", etc.
+}

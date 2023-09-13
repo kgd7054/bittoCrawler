@@ -4,6 +4,7 @@ import (
 	conf "bittoCralwer/config"
 	"bittoCralwer/ether/api"
 	ether "bittoCralwer/ether/proto"
+	"bittoCralwer/model"
 	"context"
 	"flag"
 	"fmt"
@@ -25,6 +26,14 @@ func main() {
 	if *httpFlag != 0 {
 		config.Port.Http = *httpFlag
 	}
+
+	//model 모듈 선언
+	repositories, err := model.NewRepositories(config)
+	if err != nil {
+		panic(err)
+	}
+	// TODO DB connection, query
+	_ = repositories
 
 	go startScrapingBlocks(config) // Starting the block scraping in a separate goroutine
 

@@ -2,9 +2,9 @@
 // versions:
 // - protoc-gen-go-grpc v1.3.0
 // - protoc             v3.21.12
-// source: ether.proto
+// source: ether/proto/ether.proto
 
-package ether
+package proto
 
 import (
 	context "context"
@@ -105,5 +105,5 @@ var BlockService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "ether.proto",
+	Metadata: "ether/proto/ether.proto",
 }

@@ -28,6 +28,8 @@ type Config struct {
 		Log      string
 	}
 
+	Repositories map[string]map[string]interface{}
+
 	Port struct {
 		Server string
 		Http   int

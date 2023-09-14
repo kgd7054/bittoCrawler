@@ -10,8 +10,89 @@ service BlockService {
 
 message ImportBlockRequest {}
 
+//message ImportBlockResponse {
+// string baseFeePerGas = 1;
+// string difficulty = 2;
+// string extraData = 3;
+// string gasLimit = 4;
+// string gasUsed = 5;
+// string hash = 6;
+// string logsBloom = 7;
+// string miner = 8;
+// string mixHash = 9;
+// string nonce = 10;
+// string number = 11;
+// string parentHash = 12;
+// string receiptsRoot = 13;
+// string sha3Uncles = 14;
+// string size = 15;
+// string stateRoot = 16;
+// string timestamp = 17;
+// string totalDifficulty = 18;
+// repeated string transactions = 19;
+// string transactionsRoot = 20;
+// repeated string uncles = 21;
+//
+//
+//////  string blockHash = 1;
+////  string hash = 1;
+//////  string blockNumber = 2;
+////  string number = 2;
+////  string status = 3;
+////  string parentHash = 4;
+////  string nonce = 5;
+////  string sha3Uncles = 6;
+////  string logsBloom = 7;
+////  string transactionsRoot = 8;
+////  string stateRoot = 9;
+////  string receiptsRoot = 10;
+////  string miner = 11;
+////  string difficulty = 12;
+////  string totalDifficulty = 13;
+////  string extraData = 14;
+////  string size = 15;
+////  string gasLimit = 16;
+////  string gasUsed = 17;
+////  string timestamp = 18;
+////  repeated string transactions = 19;
+////  repeated string uncles = 20;
+//}
+
 message ImportBlockResponse {
-  string blockHash = 1;
-  int64 blockNumber = 2;
-  string status = 3; // e.g., "imported", "error", etc.
+ uint64 id = 1;
+ string jsonrpc = 2;
+ Block result = 3;
+}
+
+message Block {
+ string baseFeePerGas = 1;
+ string difficulty = 2;
+ string extraData = 3;
+ string gasLimit = 4;
+ string gasUsed = 5;
+ string hash = 6;
+ string logsBloom = 7;
+ string miner = 8;
+ string mixHash = 9;
+ string nonce = 10;
+ string number = 11;
+ string parentHash = 12;
+ string receiptsRoot = 13;
+ string sha3Uncles = 14;
+ string size = 15;
+ string stateRoot = 16;
+ string timestamp = 17;
+ string totalDifficulty = 18;
+ repeated string transactions = 19;
+ string transactionsRoot = 20;
+ repeated string uncles = 21;
+ repeated Withdrawal withdrawals = 22;
+ string withdrawalsRoot = 23;
+}
+
+message Withdrawal {
+ string address = 1;
+ string amount = 2;
+ string index = 3;
+ uint32 validatorIndex = 4;
 }

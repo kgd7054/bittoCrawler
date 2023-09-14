@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bittoCralwer/common"
 	conf "bittoCralwer/config"
 	"bittoCralwer/ether/api"
 	ether "bittoCralwer/ether/proto"
@@ -54,6 +55,7 @@ func main() {
 	// TODO health check
 }
 
+// TODO common 이나 해당 스크랩함수 수정및 이동
 func startScrapingBlocks(config *conf.Config) {
 	server := &api.BlockServer{
 		Config: config,
@@ -67,9 +69,17 @@ func startScrapingBlocks(config *conf.Config) {
 		case <-ticker.C:
 			blockResponse, err := server.ImportLatestBlock(context.Background(), &ether.ImportBlockRequest{})
 			if err != nil {
+				// TODO fmt 들 log 로 수정
 				fmt.Println("error : ", err)
 			} else {
-				fmt.Println("block number : ", blockResponse.BlockNumber, blockResponse.BlockHash, blockResponse.Status)
+				fmt.Println("block resp : ", blockResponse)
+
+				bn, err := common.HexToDecimal(blockResponse.Result.Number)
+				if err != nil {
+					fmt.Println("err : ", err)
+				}
+				_ = bn
+				//fmt.Println("block number : ", blockResponse.Result.Number, blockResponse.Result.Hash, blockResponse.Result.Timestamp)
 			}
 		}
 	}

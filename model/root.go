@@ -22,6 +22,11 @@ func NewRepositories(cfg *conf.Config) (*Repositories, error) {
 		elems: make(map[reflect.Type]reflect.Value),
 	}
 
+	//for _, c := range []struct{
+	//	constructor RepositoryConstructor
+	//	config *conf.Config
+	//}
+
 	//for _, c := range []struct {
 	//	constructor RepositoryConstructor
 	//	config      *conf.Config

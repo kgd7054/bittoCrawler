@@ -5,6 +5,7 @@ import (
 	ether "bittoCralwer/ether/proto"
 	"context"
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -25,18 +26,58 @@ func (s *BlockServer) ImportLatestBlock(ctx context.Context, req *ether.ImportBl
 		return nil, err
 	}
 
-	// Extract details from the blockData
-	blockHash := blockData["result"].(map[string]interface{})["hash"].(string)
-	blockNumber := blockData["result"].(map[string]interface{})["number"].(string)
-	// ... extract other fields as needed
-
-	response := &ether.ImportBlockResponse{
-		BlockHash:   blockHash,
-		BlockNumber: blockNumber,
-		Status:      "imported",
+	result, ok := blockData["result"].(map[string]interface{})
+	if !ok {
+		return nil, errors.New("failed to cast result to map[string]interface{}")
 	}
 
-	return response, nil
+	block := &ether.Block{
+		BaseFeePerGas:    result["baseFeePerGas"].(string),
+		Difficulty:       result["difficulty"].(string),
+		ExtraData:        result["extraData"].(string),
+		GasLimit:         result["gasLimit"].(string),
+		GasUsed:          result["gasUsed"].(string),
+		Hash:             result["hash"].(string),
+		LogsBloom:        result["logsBloom"].(string),
+		Miner:            result["miner"].(string),
+		MixHash:          result["mixHash"].(string),
+		Nonce:            result["nonce"].(string),
+		Number:           result["number"].(string),
+		ParentHash:       result["parentHash"].(string),
+		ReceiptsRoot:     result["receiptsRoot"].(string),
+		Sha3Uncles:       result["sha3Uncles"].(string),
+		Size:             result["size"].(string),
+		StateRoot:        result["stateRoot"].(string),
+		Timestamp:        result["timestamp"].(string),
+		TotalDifficulty:  result["totalDifficulty"].(string),
+		TransactionsRoot: result["transactionsRoot"].(string),
+		WithdrawalsRoot:  result["withdrawalsRoot"].(string),
+	}
+
+	if txs, ok := result["transactions"].([]interface{}); ok {
+		for _, tx := range txs {
+			block.Transactions = append(block.Transactions, tx.(string))
+		}
+	}
+
+	if uncles, ok := result["uncles"].([]interface{}); ok {
+		for _, uncle := range uncles {
+			block.Uncles = append(block.Uncles, uncle.(string))
+		}
+	}
+
+	//blockNumber := ethercommon.HexToAddress(block.Number)
+	//fmt.Println("block number : ", blockNumber)
+
+	//bn, err := common.HexToDecimal(block.Number)
+	//if err != nil {
+	//	fmt.Println("err : ", err)
+	//}
+	//fmt.Println("bn : ", bn)
+
+	return &ether.ImportBlockResponse{
+		Result: block,
+	}, nil
 }
 
 func (s *BlockServer) getLatestBlockFromAlchemy() (map[string]interface{}, error) {

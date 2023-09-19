@@ -4,14 +4,15 @@ import (
 	"bittoCralwer/common"
 	conf "bittoCralwer/config"
 	"bittoCralwer/ether/api"
-	ether "bittoCralwer/ether/proto"
 	"bittoCralwer/model"
 	"context"
 	"flag"
 	"fmt"
-	"google.golang.org/grpc"
 	"log"
-	"net"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 )
 
@@ -28,37 +29,46 @@ func main() {
 		config.Port.Http = *httpFlag
 	}
 
-	//model 모듈 선언
+	// model 모듈 선언
 	repositories, err := model.NewRepositories(config)
 	if err != nil {
 		panic(err)
 	}
 	// TODO DB connection, query
-	_ = repositories
 
-	go startScrapingBlocks(config) // Starting the block scraping in a separate goroutine
-
-	// gRPC server setup (unchanged from your code)
-	lis, err := net.Listen("tcp", ":50052")
-	if err != nil {
-		// TODO log 수정
-		fmt.Println("err : ", err)
-	}
-
-	grpcServer := grpc.NewServer()
-	ether.RegisterBlockServiceServer(grpcServer, &api.BlockServer{})
-
-	if err := grpcServer.Serve(lis); err != nil {
-		log.Fatalf("Failed to serve gRPC server: %v", err)
-	}
+	go startScrapingBlocks(config, repositories) // Starting the block scraping in a separate goroutine
 
 	// TODO health check
+	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("OK"))
+	})
+
+	srv := &http.Server{
+		Addr: fmt.Sprintf(":%d", config.Port.Http), // Use just the port for the HTTP server
+	}
+
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
+	go func() {
+		<-c
+		fmt.Println("\nGracefully shutting down...")
+		srv.Shutdown(nil)
+		// TODO: Additional cleanup if needed
+		os.Exit(0)
+	}()
+
+	fmt.Printf("Starting HTTP server on port %d for health checks...\n", config.Port.Http)
+	if err := srv.ListenAndServe(); err != http.ErrServerClosed {
+		log.Fatalf("Failed to serve HTTP server: %v", err)
+	}
 }
 
 // TODO common 이나 해당 스크랩함수 수정및 이동
-func startScrapingBlocks(config *conf.Config) {
+func startScrapingBlocks(config *conf.Config, model *model.Repositories) {
 	server := &api.BlockServer{
-		Config: config,
+		Config:     config,
+		Repository: model,
 	}
 
 	ticker := time.NewTicker(5 * time.Second)
@@ -67,19 +77,21 @@ func startScrapingBlocks(config *conf.Config) {
 	for {
 		select {
 		case <-ticker.C:
-			blockResponse, err := server.ImportLatestBlock(context.Background(), &ether.ImportBlockRequest{})
+			blockResponse, err := server.ImportLatestBlock(context.Background())
 			if err != nil {
 				// TODO fmt 들 log 로 수정
 				fmt.Println("error : ", err)
 			} else {
-				fmt.Println("block resp : ", blockResponse)
 
-				bn, err := common.HexToDecimal(blockResponse.Result.Number)
+				// TODO: block data parsing
+				bn, err := common.HexToDecimal(blockResponse.Number)
 				if err != nil {
 					fmt.Println("err : ", err)
 				}
 				_ = bn
-				//fmt.Println("block number : ", blockResponse.Result.Number, blockResponse.Result.Hash, blockResponse.Result.Timestamp)
+
+				fmt.Println("block response : ", blockResponse)
+
 			}
 		}
 	}

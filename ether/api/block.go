@@ -2,10 +2,10 @@ package api
 
 import (
 	conf "bittoCralwer/config"
-	ether "bittoCralwer/ether/proto"
+	"bittoCralwer/model"
+	"bittoCralwer/protocol/dto"
 	"context"
 	"encoding/json"
-	"errors"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -14,73 +14,57 @@ import (
 const alchemyAPIURL = "https://eth-sepolia.g.alchemy.com/v2/"
 
 type BlockServer struct {
-	ether.UnimplementedBlockServiceServer
-	Config *conf.Config
+	Config     *conf.Config
+	Repository *model.Repositories
 }
 
-func (s *BlockServer) ImportLatestBlock(ctx context.Context, req *ether.ImportBlockRequest) (*ether.ImportBlockResponse, error) {
-	// Implement the logic to import the latest Ethereum block using the Alchemy Sepolia API.
-	// Construct and return a proto.ImportBlockResponse object populated with the block data.
+type AlchemyResponse struct {
+	JSONRPC string            `json:"jsonrpc"`
+	ID      int               `json:"id"`
+	Result  dto.EthereumBlock `json:"result"`
+}
+
+func (s *BlockServer) ImportLatestBlock(ctx context.Context) (*dto.EthereumBlock, error) {
+
 	blockData, err := s.getLatestBlockFromAlchemy()
 	if err != nil {
 		return nil, err
 	}
 
-	result, ok := blockData["result"].(map[string]interface{})
-	if !ok {
-		return nil, errors.New("failed to cast result to map[string]interface{}")
+	var alchemyResponse AlchemyResponse
+	if err := json.Unmarshal(blockData, &alchemyResponse); err != nil {
+		return nil, err
 	}
 
-	block := &ether.Block{
-		BaseFeePerGas:    result["baseFeePerGas"].(string),
-		Difficulty:       result["difficulty"].(string),
-		ExtraData:        result["extraData"].(string),
-		GasLimit:         result["gasLimit"].(string),
-		GasUsed:          result["gasUsed"].(string),
-		Hash:             result["hash"].(string),
-		LogsBloom:        result["logsBloom"].(string),
-		Miner:            result["miner"].(string),
-		MixHash:          result["mixHash"].(string),
-		Nonce:            result["nonce"].(string),
-		Number:           result["number"].(string),
-		ParentHash:       result["parentHash"].(string),
-		ReceiptsRoot:     result["receiptsRoot"].(string),
-		Sha3Uncles:       result["sha3Uncles"].(string),
-		Size:             result["size"].(string),
-		StateRoot:        result["stateRoot"].(string),
-		Timestamp:        result["timestamp"].(string),
-		TotalDifficulty:  result["totalDifficulty"].(string),
-		TransactionsRoot: result["transactionsRoot"].(string),
-		WithdrawalsRoot:  result["withdrawalsRoot"].(string),
-	}
+	block := alchemyResponse.Result
 
-	if txs, ok := result["transactions"].([]interface{}); ok {
-		for _, tx := range txs {
-			block.Transactions = append(block.Transactions, tx.(string))
-		}
-	}
-
-	if uncles, ok := result["uncles"].([]interface{}); ok {
-		for _, uncle := range uncles {
-			block.Uncles = append(block.Uncles, uncle.(string))
-		}
-	}
-
-	//blockNumber := ethercommon.HexToAddress(block.Number)
-	//fmt.Println("block number : ", blockNumber)
-
-	//bn, err := common.HexToDecimal(block.Number)
-	//if err != nil {
-	//	fmt.Println("err : ", err)
-	//}
-	//fmt.Println("bn : ", bn)
-
-	return &ether.ImportBlockResponse{
-		Result: block,
+	return &dto.EthereumBlock{
+		BaseFeePerGas:    block.BaseFeePerGas,
+		Difficulty:       block.Difficulty,
+		ExtraData:        block.ExtraData,
+		GasLimit:         block.GasLimit,
+		GasUsed:          block.GasUsed,
+		Hash:             block.Hash,
+		LogsBloom:        block.LogsBloom,
+		Miner:            block.Miner,
+		MixHash:          block.MixHash,
+		Nonce:            block.Nonce,
+		Number:           block.Number,
+		ParentHash:       block.ParentHash,
+		ReceiptsRoot:     block.ReceiptsRoot,
+		Sha3Uncles:       block.Sha3Uncles,
+		Size:             block.Size,
+		StateRoot:        block.StateRoot,
+		Timestamp:        block.Timestamp,
+		TotalDifficulty:  block.TotalDifficulty,
+		Transactions:     block.Transactions,
+		TransactionsRoot: block.TransactionsRoot,
+		Withdrawal:       block.Withdrawal,
+		WithdrawalsRoot:  block.WithdrawalsRoot,
 	}, nil
 }
 
-func (s *BlockServer) getLatestBlockFromAlchemy() (map[string]interface{}, error) {
+func (s *BlockServer) getLatestBlockFromAlchemy() ([]byte, error) {
 	// Create a new request
 	// Define the request payload
 	payload := `{
@@ -112,12 +96,5 @@ func (s *BlockServer) getLatestBlockFromAlchemy() (map[string]interface{}, error
 		return nil, err
 	}
 
-	// Parse the JSON response
-	var result map[string]interface{}
-	err = json.Unmarshal(body, &result)
-	if err != nil {
-		return nil, err
-	}
-
-	return result, nil
+	return body, nil
 }

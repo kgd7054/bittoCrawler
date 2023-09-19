@@ -1,7 +1,7 @@
 package conf
 
 import (
-	"bittoCralwer/common"
+	"bittoCralwer/internal/common"
 	"github.com/naoina/toml"
 	"os"
 	"path"

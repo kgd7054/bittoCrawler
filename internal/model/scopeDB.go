@@ -2,8 +2,8 @@ package model
 
 import (
 	conf "bittoCralwer/config"
-	"bittoCralwer/model/dao"
-	"bittoCralwer/protocol/dto"
+	"bittoCralwer/internal/dao"
+	"bittoCralwer/internal/protocol/dto"
 	"database/sql"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
@@ -38,6 +38,7 @@ func NewScopeDB(config *conf.Config, root *Repositories) (IRepository, error) {
 	}
 
 	r.DB = db
+	// TODO: trace db connection log
 
 	return r, nil
 }

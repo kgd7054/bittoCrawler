@@ -1,8 +1,9 @@
 package dao
 
 import (
-	"bittoCralwer/protocol/dto"
+	"bittoCralwer/internal/protocol/dto"
 	"database/sql"
+	"fmt"
 )
 
 type EthereumBlockDAO struct {
@@ -28,16 +29,14 @@ func (dao *EthereumBlockDAO) Save(block *dto.EthereumBlock) error {
     INSERT INTO blocks (
         BaseFeePerGas, Difficulty, ExtraData, GasLimit, GasUsed, Hash, LogsBloom, 
         Miner, MixHash, Nonce, Number, ParentHash, ReceiptsRoot, Sha3Uncles, 
-        Size, StateRoot, Timestamp, TotalDifficulty, TransactionsRoot, WithdrawalsRoot,
-        WithdrawalAddress, WithdrawalAmount, WithdrawalIndex, WithdrawalValidatorIndex
+        Size, StateRoot, Timestamp, TotalDifficulty, TransactionsRoot, WithdrawalsRoot
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 
 	result, err := tx.Exec(blockInsert, block.BaseFeePerGas, block.Difficulty, block.ExtraData, block.GasLimit, block.GasUsed,
-		block.Hash, block.LogsBloom, block.Miner, block.MixHash, block.Nonce, block.ParentHash, block.ReceiptsRoot,
+		block.Hash, block.LogsBloom, block.Miner, block.MixHash, block.Nonce, block.Number, block.ParentHash, block.ReceiptsRoot,
 		block.Sha3Uncles, block.Size, block.StateRoot, block.Timestamp, block.TotalDifficulty, block.TransactionsRoot,
-		block.WithdrawalsRoot, block.Withdrawal.Address, block.Withdrawal.Amount, block.Withdrawal.Index,
-		block.Withdrawal.ValidatorIndex)
+		block.WithdrawalsRoot) // Removed the withdrawal fields here since they'll be inserted into a separate table
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -49,6 +48,7 @@ func (dao *EthereumBlockDAO) Save(block *dto.EthereumBlock) error {
 		tx.Rollback()
 		return err
 	}
+	fmt.Println("block id : ", blockID)
 
 	// Insert transactions
 	for _, transaction := range block.Transactions {
@@ -62,6 +62,15 @@ func (dao *EthereumBlockDAO) Save(block *dto.EthereumBlock) error {
 	// Insert uncles
 	for _, uncle := range block.Uncles {
 		_, err = tx.Exec("INSERT INTO uncles (block_id, uncle) VALUES (?, ?)", blockID, uncle)
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+
+	// Insert withdrawals
+	for _, withdrawal := range block.Withdrawals {
+		_, err = tx.Exec("INSERT INTO withdrawals (block_id, address, amount, withdrawal_index, validator_index) VALUES (?, ?, ?, ?, ?)", blockID, withdrawal.Address, withdrawal.Amount, withdrawal.Index, withdrawal.ValidatorIndex)
 		if err != nil {
 			tx.Rollback()
 			return err

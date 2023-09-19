@@ -74,3 +74,18 @@ func (p *Repositories) Register(constructor RepositoryConstructor, config *conf.
 	}
 	return nil
 }
+
+func InitializeRepositories(cfg *conf.Config) (*Repositories, error) {
+	return NewRepositories(cfg)
+}
+
+func (p *Repositories) GetScopeDB() *ScopeDB {
+	p.lock.RLock()
+	defer p.lock.RUnlock()
+
+	v, ok := p.elems[reflect.TypeOf(&ScopeDB{})]
+	if !ok {
+		return nil
+	}
+	return v.Interface().(*ScopeDB)
+}

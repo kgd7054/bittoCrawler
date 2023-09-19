@@ -2,10 +2,11 @@ package api
 
 import (
 	conf "bittoCralwer/config"
-	"bittoCralwer/model"
-	"bittoCralwer/protocol/dto"
+	"bittoCralwer/internal/model"
+	"bittoCralwer/internal/protocol/dto"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -59,7 +60,7 @@ func (s *BlockServer) ImportLatestBlock(ctx context.Context) (*dto.EthereumBlock
 		TotalDifficulty:  block.TotalDifficulty,
 		Transactions:     block.Transactions,
 		TransactionsRoot: block.TransactionsRoot,
-		Withdrawal:       block.Withdrawal,
+		Withdrawals:      block.Withdrawals,
 		WithdrawalsRoot:  block.WithdrawalsRoot,
 	}, nil
 }
@@ -95,6 +96,14 @@ func (s *BlockServer) getLatestBlockFromAlchemy() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// Parse the JSON response
+	var result map[string]interface{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println("result : ", result)
 
 	return body, nil
 }

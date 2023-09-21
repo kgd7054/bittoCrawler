@@ -2,11 +2,13 @@ package main
 
 import (
 	conf "bittoCralwer/config"
+	"bittoCralwer/internal/common"
 	"bittoCralwer/internal/model"
 	"bittoCralwer/internal/server"
 	"bittoCralwer/internal/service/blockchain/ether/blockscraper"
 	"flag"
-	"fmt"
+	"github.com/ethereum/go-ethereum/log"
+	"path"
 	"sync"
 )
 
@@ -22,6 +24,15 @@ func main() {
 	if *httpFlag != 0 {
 		config.Port.Http = *httpFlag
 	}
+
+	common.InitLog(common.Config{
+		UseTerminal:        config.Log.Terminal.Use,
+		UseFile:            config.Log.File.Use,
+		TerminalJSONOutput: config.Log.Terminal.JSONFormat,
+		VerbosityTerminal:  config.Log.Terminal.Verbosity,
+		VerbosityFile:      config.Log.File.Verbosity,
+		FilePath:           path.Join(config.Datadir.Root, config.Datadir.Log, config.Log.File.FileName),
+	})
 
 	repositories, err := model.InitializeRepositories(config)
 	if err != nil {
@@ -41,9 +52,9 @@ func main() {
 	// This function can also accept the waitgroup if you want to track the server goroutine
 	server.HandleGracefulShutdown(srv)
 
-	fmt.Println("All systems initialized. Waiting for tasks...")
+	log.Trace("Initialized", "server", "all systems initialized. waiting for tasks...")
 
 	wg.Wait() // This will block until all tasks tracked by the WaitGroup have called Done()
 
-	fmt.Println("All tasks completed or terminated.")
+	log.Trace("Completed", "server", "all tasks completed or terminated.")
 }

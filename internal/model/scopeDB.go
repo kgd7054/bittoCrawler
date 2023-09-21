@@ -26,6 +26,7 @@ func NewScopeDB(config *conf.Config, root *Repositories) (IRepository, error) {
 	dsn := fmt.Sprintf("%s:%s@tcp(%s)/%s", cfg["username"], cfg["pass"], cfg["datasource"], cfg["db"])
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
+		// TODO: log 통일
 		log.Fatal(err)
 		return nil, err
 	}

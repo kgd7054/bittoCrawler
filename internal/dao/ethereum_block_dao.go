@@ -3,7 +3,6 @@ package dao
 import (
 	"bittoCralwer/internal/protocol/dto"
 	"database/sql"
-	"fmt"
 )
 
 type EthereumBlockDAO struct {
@@ -16,9 +15,6 @@ func NewEthereumBlockDAO(db *sql.DB) *EthereumBlockDAO {
 
 // Save saves the EthereumBlock into the database.
 func (dao *EthereumBlockDAO) Save(block *dto.EthereumBlock) error {
-	// Convert and save the EthereumBlock object into your MySQL database.
-	// Use DAO.DB to execute the SQL query.
-	// Return any error that might occur.
 
 	tx, err := dao.DB.Begin()
 	if err != nil {
@@ -27,9 +23,9 @@ func (dao *EthereumBlockDAO) Save(block *dto.EthereumBlock) error {
 
 	blockInsert := `
     INSERT INTO blocks (
-        BaseFeePerGas, Difficulty, ExtraData, GasLimit, GasUsed, Hash, LogsBloom, 
-        Miner, MixHash, Nonce, Number, ParentHash, ReceiptsRoot, Sha3Uncles, 
-        Size, StateRoot, Timestamp, TotalDifficulty, TransactionsRoot, WithdrawalsRoot
+        base_fee_per_gas, difficulty, extra_data, gas_limit, gas_used, hash, logs_bloom, 
+        miner, mix_hash, nonce, number, parent_hash, receipts_root, sha_3_uncles, 
+        size, state_root, timestamp, total_difficulty, transactions_root, withdrawals_root
     )
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 
@@ -42,15 +38,12 @@ func (dao *EthereumBlockDAO) Save(block *dto.EthereumBlock) error {
 		return err
 	}
 
-	// Get the ID of the last inserted block
 	blockID, err := result.LastInsertId()
 	if err != nil {
 		tx.Rollback()
 		return err
 	}
-	fmt.Println("block id : ", blockID)
 
-	// Insert transactions
 	for _, transaction := range block.Transactions {
 		_, err = tx.Exec("INSERT INTO transactions (block_id, transaction) VALUES (?, ?)", blockID, transaction)
 		if err != nil {
@@ -59,7 +52,6 @@ func (dao *EthereumBlockDAO) Save(block *dto.EthereumBlock) error {
 		}
 	}
 
-	// Insert uncles
 	for _, uncle := range block.Uncles {
 		_, err = tx.Exec("INSERT INTO uncles (block_id, uncle) VALUES (?, ?)", blockID, uncle)
 		if err != nil {
@@ -68,7 +60,6 @@ func (dao *EthereumBlockDAO) Save(block *dto.EthereumBlock) error {
 		}
 	}
 
-	// Insert withdrawals
 	for _, withdrawal := range block.Withdrawals {
 		_, err = tx.Exec("INSERT INTO withdrawals (block_id, address, amount, withdrawal_index, validator_index) VALUES (?, ?, ?, ?, ?)", blockID, withdrawal.Address, withdrawal.Amount, withdrawal.Index, withdrawal.ValidatorIndex)
 		if err != nil {

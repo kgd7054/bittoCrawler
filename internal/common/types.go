@@ -5,10 +5,9 @@ import (
 	"math/big"
 	"strconv"
 	"strings"
-	"time"
 )
 
-// TODO 인터페이스로 멀티체인 추가
+// TODO: 인터페이스로 멀티체인 추가
 
 func HexToDecimal(str string) (string, error) {
 	if strings.HasPrefix(str, "0x") {
@@ -24,12 +23,21 @@ func HexToDecimal(str string) (string, error) {
 	return num.String(), nil
 }
 
-func HexToTime(str string) (*time.Time, error) {
-	intTimestamp, err := strconv.ParseInt(str[2:], 16, 64)
+func DecimalStringToHex(str string) (string, error) {
+	num, err := strconv.ParseInt(str, 10, 64)
 	if err != nil {
-		return nil, err
+		return "", err
+	}
+	return fmt.Sprintf("0x%x", num), nil
+
+}
+
+func ConvertStringToInt(str string) (int, error) {
+
+	num, err := strconv.Atoi(str)
+	if err != nil {
+		return 0, err
 	}
 
-	timeValue := time.Unix(intTimestamp, 0)
-	return &timeValue, nil
+	return num, nil
 }

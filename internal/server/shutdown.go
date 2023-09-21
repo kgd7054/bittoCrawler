@@ -1,7 +1,7 @@
 package server
 
 import (
-	"fmt"
+	"github.com/ethereum/go-ethereum/log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -13,7 +13,7 @@ func HandleGracefulShutdown(srv *http.Server) {
 	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
 	go func() {
 		<-c
-		fmt.Println("\nGracefully shutting down...")
+		log.Trace("HandleGracefulShutdown", "server", "gracefully shutting down...")
 		srv.Shutdown(nil)
 		os.Exit(0)
 	}()

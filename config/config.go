@@ -28,6 +28,11 @@ type Config struct {
 		Log      string
 	}
 
+	Common struct {
+		ServiceId string
+		Priv      string
+	}
+
 	Repositories map[string]map[string]interface{}
 
 	Port struct {
@@ -37,6 +42,19 @@ type Config struct {
 
 	Alchemy struct {
 		ApiKey string
+	}
+
+	Log struct {
+		Terminal struct {
+			Use        bool
+			Verbosity  int
+			JSONFormat bool
+		}
+		File struct {
+			Use       bool
+			Verbosity int
+			FileName  string
+		}
 	}
 }
 

@@ -3,6 +3,7 @@ package model
 import (
 	conf "bittoCralwer/config"
 	"fmt"
+	"github.com/ethereum/go-ethereum/log"
 	"reflect"
 	"sync"
 )
@@ -33,6 +34,7 @@ func NewRepositories(cfg *conf.Config) (*Repositories, error) {
 		constructor RepositoryConstructor
 		config      *conf.Config
 	}{
+		{NewRedisDB, cfg},
 		{NewScopeDB, cfg},
 	} {
 		if err := r.Register(c.constructor, c.config); err != nil {
@@ -46,8 +48,7 @@ func NewRepositories(cfg *conf.Config) (*Repositories, error) {
 
 		for t, e := range r.elems {
 			if err := e.Interface().(IRepository).Start(); err != nil {
-				//elog.Error("NewRepositories", "repository", t, "error", err)
-				fmt.Println("NewRepositories", "repository", t, "error", err)
+				log.Error("NewRepositories", "repository", t, "err", err)
 				return err
 			}
 		}
@@ -88,4 +89,15 @@ func (p *Repositories) GetScopeDB() *ScopeDB {
 		return nil
 	}
 	return v.Interface().(*ScopeDB)
+}
+
+func (p *Repositories) GetRedisDB() *RedisDB {
+	p.lock.RLock()
+	defer p.lock.RUnlock()
+
+	v, ok := p.elems[reflect.TypeOf(&RedisDB{})]
+	if !ok {
+		return nil
+	}
+	return v.Interface().(*RedisDB)
 }

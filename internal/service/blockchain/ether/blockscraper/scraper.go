@@ -37,6 +37,8 @@ func StartScrapingBlocks(config *conf.Config, model *model.Repositories) {
 
 			} else {
 
+				server.GetTransactionInfo()
+
 				// TODO: block data parsing
 				blockNumber, err := common.HexToDecimal(blockResponse.Number)
 				if err != nil {

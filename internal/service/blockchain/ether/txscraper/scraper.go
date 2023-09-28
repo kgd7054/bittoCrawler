@@ -20,7 +20,6 @@ func StartScrapingTxs(config *conf.Config, model *model.Repositories) {
 		Repository: model,
 	}
 	scopeDB := model.GetScopeDB()
-	_, _ = server, scopeDB
 
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()

@@ -77,23 +77,6 @@ func (dao *EthereumTxDAO) InsertEthTx(detail *dto.TransactionDetail) error {
 	return err
 }
 
-//func (dao *EthereumTxDAO) InsertEthTx(detail *dto.TransactionDetail) error {
-//	query := `
-//    INSERT INTO tx_detail_info (
-//      hash, status, block_number, timestamp, method, from_address, to_address,
-//      value, transaction_fee, gas_price, gas_limit, gas_used, nonce, tx_type, input_data
-//    )
-//    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-//  `
-//	_, err := dao.DB.Exec(
-//		query,
-//		detail.Hash, detail.Status, detail.BlockNumber, detail.Timestamp, detail.Method,
-//		detail.From, detail.To, detail.Value, detail.TransactionFee, detail.GasPrice,
-//		detail.GasLimit, detail.GasUsed, detail.Nonce, detail.TxType, detail.InputData,
-//	)
-//	return err
-//}
-
 func (dao *EthereumTxDAO) MarkAsProcessed(id int) error {
 	_, err := dao.DB.Exec("UPDATE transactions SET processed = TRUE WHERE id = ?", id)
 	return err

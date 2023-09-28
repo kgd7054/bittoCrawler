@@ -31,15 +31,13 @@ func StartScrapingBlocks(config *conf.Config, model *model.Repositories) {
 		case <-ticker.C:
 			blockResponse, err := server.ImportLatestBlock(context.Background())
 			if err != nil {
-				// TODO common -> log로 수정
 				common.Error("StartScrapingBlocks", "ImportLatestBlock", err)
 				continue
 
 			} else {
 
-				server.GetTransactionInfo()
+				//server.GetTransactionInfo()
 
-				// TODO: block data parsing
 				blockNumber, err := common.HexToDecimal(blockResponse.Number)
 				if err != nil {
 					common.Error("StartScrapingBlocks", "HexToDecimal", err, "blockNumber", blockNumber)

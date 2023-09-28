@@ -6,6 +6,7 @@ import (
 	"bittoCralwer/internal/model"
 	"bittoCralwer/internal/server"
 	"bittoCralwer/internal/service/blockchain/ether/blockscraper"
+	"bittoCralwer/internal/service/blockchain/ether/txscraper"
 	"flag"
 	"github.com/ethereum/go-ethereum/log"
 	"path"
@@ -45,6 +46,12 @@ func main() {
 	go func() {
 		defer wg.Done()
 		blockscraper.StartScrapingBlocks(config, repositories)
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		txscraper.StartScrapingTxs(config, repositories)
 	}()
 
 	srv := server.StartServer(config.Port.Http)

@@ -62,10 +62,26 @@ func (p *ScopeDB) Start() error {
 
 func (p *ScopeDB) SaveEthereumBlock(block *dto.EthereumBlock) error {
 	blockDAO := dao.NewEthereumBlockDAO(p.DB)
-	return blockDAO.Save(block)
+	return blockDAO.SaveEtherBlock(block)
 }
 
 func (p *ScopeDB) GetEthereumBlock(blockHash string) (*dto.EthereumBlock, error) {
 	blockDAO := dao.NewEthereumBlockDAO(p.DB)
 	return blockDAO.Get(blockHash)
+}
+
+// GetEthereumTx : tx 데이터들 조회 및 polling
+func (p *ScopeDB) GetEthereumTx() ([]dto.TransactionsInfo, error) {
+	txDAO := dao.NewEthereumTxDAO(p.DB)
+	return txDAO.GetEtherTx()
+}
+
+func (p *ScopeDB) InsertEthereumTxDetailInfo(data dto.TransactionDetail) error {
+	txDAO := dao.NewEthereumTxDAO(p.DB)
+	return txDAO.InsertEthTx(&data)
+}
+
+func (p *ScopeDB) MarkAsProcessedTxData(id int) error {
+	txDAO := dao.NewEthereumTxDAO(p.DB)
+	return txDAO.MarkAsProcessed(id)
 }

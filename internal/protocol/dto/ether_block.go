@@ -11,7 +11,7 @@ type EthereumBlock struct {
 	Miner            string       `json:"miner"`
 	MixHash          string       `json:"mixHash"`
 	Nonce            string       `json:"nonce"`
-	Number           string       `json:"number"`
+	Number           string       `json:"number"` // TODO: type big.int
 	ParentHash       string       `json:"parentHash"`
 	ReceiptsRoot     string       `json:"receiptsRoot"`
 	Sha3Uncles       string       `json:"sha3Uncles"`

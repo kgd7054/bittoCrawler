@@ -14,7 +14,7 @@ func NewEthereumBlockDAO(db *sql.DB) *EthereumBlockDAO {
 }
 
 // Save saves the EthereumBlock into the database.
-func (dao *EthereumBlockDAO) Save(block *dto.EthereumBlock) error {
+func (dao *EthereumBlockDAO) SaveEtherBlock(block *dto.EthereumBlock) error {
 
 	tx, err := dao.DB.Begin()
 	if err != nil {
@@ -44,8 +44,9 @@ func (dao *EthereumBlockDAO) Save(block *dto.EthereumBlock) error {
 		return err
 	}
 
+	// TODO: table save 작은 단위로 나누기
 	for _, transaction := range block.Transactions {
-		_, err = tx.Exec("INSERT INTO transactions (block_id, transaction) VALUES (?, ?)", blockID, transaction)
+		_, err = tx.Exec("INSERT INTO transactions (block_id, transaction, processed) VALUES (?, ?, ?)", blockID, transaction, false)
 		if err != nil {
 			tx.Rollback()
 			return err

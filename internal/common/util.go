@@ -1,6 +1,7 @@
 package common
 
 import (
+	"math/big"
 	"os"
 	"os/user"
 )
@@ -13,6 +14,13 @@ func HomeDir() string {
 		return usr.HomeDir
 	}
 	return ""
+}
+
+func MinBigInt(a, b *big.Int) *big.Int {
+	if a.Cmp(b) < 0 {
+		return new(big.Int).Set(a)
+	}
+	return new(big.Int).Set(b)
 }
 
 // TODO: map interface 파싱 함수 추가

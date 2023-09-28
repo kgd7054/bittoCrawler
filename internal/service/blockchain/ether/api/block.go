@@ -6,12 +6,8 @@ import (
 	"bittoCralwer/internal/model"
 	"bittoCralwer/internal/protocol/dto"
 	"context"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	ethercommon "github.com/ethereum/go-ethereum/common"
-	ethertypes "github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -169,71 +165,4 @@ func (s *BlockServer) getLatestBlockFromAlchemy() ([]byte, error) {
 	}
 
 	return body, nil
-}
-
-func (s *BlockServer) GetTransactionInfo() {
-	//======
-	hash := "0x6863329f0665ab3e8057081d97fe5b04d7e8270ab4a7917aba0188c739772917"
-	client, err := ethclient.Dial(alchemyAPIURL + s.Config.Alchemy.ApiKey)
-	if err != nil {
-		fmt.Println("err : ", err)
-	}
-	strHash := ethercommon.HexToHash(hash)
-
-	fmt.Println("client : ", client)
-	fmt.Println("hash : ", strHash)
-
-	tx, _, err := client.TransactionByHash(context.TODO(), strHash)
-	if err != nil {
-		fmt.Println("err : ", err)
-	}
-
-	receipt, err := client.TransactionReceipt(context.Background(), strHash)
-	if err != nil {
-		fmt.Println("err : ", err)
-	}
-	fmt.Println("receipt : ", receipt)
-	blockNumber := receipt.BlockNumber
-	block, err := client.BlockByNumber(context.Background(), blockNumber)
-	if err != nil {
-		fmt.Println("block : ", block)
-	}
-
-	timestamp := block.Time()
-	fmt.Println("time stamp : ", timestamp)
-
-	inputData := tx.Data()
-	//fmt.Println("input data : ", inputData)
-
-	hexInputData := hex.EncodeToString(inputData)
-	fmt.Printf("hex input data : 0x%s", hexInputData)
-
-	method := hex.EncodeToString(inputData[:4])
-	fmt.Printf("method : 0x%s", method)
-
-	from := ethercommon.Address{}
-	switch tx.Type() {
-	case ethertypes.LegacyTxType:
-		from, err = ethertypes.Sender(ethertypes.HomesteadSigner{}, tx)
-	case ethertypes.DynamicFeeTxType:
-		from, err = ethertypes.Sender(ethertypes.NewLondonSigner(tx.ChainId()), tx)
-	default:
-		fmt.Println("not")
-	}
-
-	if err != nil {
-		fmt.Println("err : ", err)
-	}
-
-	fmt.Println("from : ", from)
-	fmt.Println("to : ", tx.To())
-
-	//mars, err := tx.MarshalJSON()
-	//if err != nil {
-	//	fmt.Println("err : ", err)
-	//}
-	//fmt.Println("marshal : ", mars)
-
-	// 매주 화요일 저녁 10시 위클리, 주간 회의같은 것
-	//======
 }
